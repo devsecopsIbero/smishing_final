@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Ciberseguridad: Smishing y QR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Configuración de Tailwind combinada -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'SF Pro Display', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              navy: '#0f172a',
+              darkBlue: '#1e3a8a',
+              blue: '#2563eb',
+              lightBlue: '#38bdf8',
+              softBlue: '#eff6ff',
+              alertRed: '#dc2626',
+              lightRed: '#fef2f2',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=SF+Pro+Text:wght@400;500;600&display=swap');
+    
+    body {
+      background-color: #0b1120;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .iphone-case {
+      box-shadow: 
+        0 0 0 10px #1e293b,
+        0 0 0 12px #334155,
+        0 25px 60px -15px rgba(0, 0, 0, 0.8);
+      border-radius: 46px;
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .custom-scroll {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .clean-shadow {
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+    }
+    .modal-backdrop {
+      backdrop-filter: blur(6px);
+    }
+    
+    /* Selección de QR (Diseño de Tarjetas) */
+    .qr-option {
+      border: 3px solid #f1f5f9; /* slate-100 */
+    }
+    .qr-option.selected {
+      border-color: #7eb5ff; /* Azul claro estilo iOS */
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-6 text-slate-800">
+
+  <!-- Marco de iPhone -->
+  <div class="relative w-full max-w-[375px] h-[760px] bg-white iphone-case overflow-hidden flex flex-col border-[2px] border-slate-700">
+    
+    <!-- Notch & Status Bar iOS -->
+    <div class="h-11 bg-white flex items-center justify-between px-7 shrink-0 z-30 pt-1">
+      <span class="text-[13px] font-semibold text-black tracking-tight w-12 text-left">9:41</span>
+      
+      <!-- Notch superior -->
+      <div class="w-36 h-5 bg-black rounded-b-2xl flex items-center justify-center gap-2">
+        <div class="w-2.5 h-2.5 rounded-full bg-[#111827]"></div>
+        <div class="w-12 h-1 bg-[#1f2937] rounded-full"></div>
+      </div>
+      
+      <!-- Iconos de señal, wifi y batería -->
+      <div class="flex items-center space-x-1.5 w-12 justify-end text-black">
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+        <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4z"/></svg>
+        <div class="w-5 h-2.5 border border-black rounded-[3px] p-[1px] flex items-center">
+          <div class="h-full w-full bg-black rounded-[1px]"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navegación superior dinámica -->
+    <div id="top-nav" class="px-5 pt-1 pb-3 bg-white flex flex-col shrink-0 transition-opacity">
+      <div class="flex items-center justify-between relative py-1">
+        <button id="nav-back-btn" onclick="handleBackAction()" class="text-blue-500 hover:opacity-75 transition">
+          <i data-lucide="chevron-left" class="w-6 h-6 stroke-[2.5]"></i>
+        </button>
+        <span id="screen-header-title" class="font-semibold text-sm text-neutral-800">Caso 1 de 3</span>
+        <div class="w-6"></div>
+      </div>
+      
+      <!-- Barras de avance -->
+      <div id="progress-bars-container" class="grid grid-cols-3 gap-1.5 mt-1 px-1">
+        <div class="h-1 rounded-full bg-blue-500 transition-all duration-300"></div>
+        <div class="h-1 rounded-full bg-slate-200 transition-all duration-300"></div>
+        <div class="h-1 rounded-full bg-slate-200 transition-all duration-300"></div>
+      </div>
+    </div>
+
+    <!-- Contenedor Principal con Scroll -->
+    <div id="viewport" class="flex-1 overflow-y-auto px-5 custom-scroll flex flex-col pb-4">
+      
+      <!-- VISTA 1: Mensaje y Decisión (Smishing) -->
+      <div id="view-question" class="flex flex-col flex-1 justify-between">
+        <div class="flex flex-col items-center pt-2">
+          <!-- Avatar circular iOS -->
+          <div class="w-12 h-12 rounded-full bg-[#dbe0e6] flex items-center justify-center text-slate-500 shadow-sm relative">
+            <i data-lucide="user" class="w-7 h-7 fill-slate-400 stroke-none"></i>
+            <span id="q-verified-badge" class="hidden absolute -bottom-0.5 -right-0.5 bg-blue-500 text-white rounded-full p-[2px]">
+              <i data-lucide="check" class="w-2.5 h-2.5 stroke-[3]"></i>
+            </span>
+          </div>
+
+          <!-- Nombre y tipo SMS -->
+          <div class="flex items-center gap-1 mt-1.5">
+            <span id="q-sender-name" class="font-semibold text-[13px] text-neutral-900">+52 55 4102 9981</span>
+            <span id="q-verified-check" class="hidden text-blue-500"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 fill-blue-500 text-white"></i></span>
+          </div>
+          <span class="text-[10px] text-neutral-400 font-semibold tracking-wide">SMS</span>
+          <span id="q-time" class="text-[10px] text-neutral-400 mt-0.5">Hoy 11:42</span>
+
+          <!-- Globo de Mensaje Gris iOS -->
+          <div class="w-full mt-3">
+            <div class="bg-[#ebebed] text-neutral-900 rounded-2xl px-4 py-3.5 text-[13.5px] leading-[1.38] shadow-sm">
+              <p id="q-sms-body">Cargando...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 pb-2">
+          <div class="text-center mb-4">
+            <h3 class="font-bold text-neutral-900 text-base leading-snug">¿Este mensaje es auténtico<br>o un engaño?</h3>
+            <p id="q-subinstruction" class="text-neutral-500 text-xs mt-1">Analiza el contenido y selecciona una opción.</p>
+          </div>
+
+          <div class="flex flex-col gap-2.5">
+            <button onclick="submitAnswer(true)" class="w-full bg-[#dcfce7] hover:bg-[#c7f8d5] text-[#15803d] font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm transition shadow-sm">
+              <div class="w-4 h-4 rounded-full bg-[#15803d] text-white flex items-center justify-center">
+                <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+              </div>
+              <span>Real</span>
+            </button>
+            <button onclick="submitAnswer(false)" class="w-full bg-[#fee2e2] hover:bg-[#fed2d2] text-[#dc2626] font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm transition shadow-sm">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-[#dc2626]"></i>
+              <span>Falso (Smishing)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA 2: Resultado (Correcto / Incorrecto) -->
+      <div id="view-result" class="hidden flex flex-col flex-1 justify-between pt-1">
+        <div class="flex flex-col items-center">
+          <div class="relative my-2">
+            <div id="res-halo" class="absolute -inset-2 bg-emerald-100/70 rounded-full blur-sm"></div>
+            <div id="res-circle" class="relative w-20 h-20 rounded-full bg-[#10b981] flex items-center justify-center text-white shadow-md">
+              <i id="res-icon" data-lucide="check" class="w-11 h-11 stroke-[3]"></i>
+            </div>
+          </div>
+          <h2 id="res-title" class="text-xl font-bold text-[#10b981] mt-2">¡Correcto!</h2>
+          <p id="res-subtitle" class="text-xs text-neutral-600 text-center max-w-[260px] mt-1 leading-normal">Identificaste el caso.</p>
+
+          <div class="w-full mt-4 text-left">
+            <h4 id="res-list-title" class="text-[13px] font-bold text-neutral-800 mb-2">Señales detectadas:</h4>
+            <div id="res-items-container" class="space-y-2.5"></div>
+          </div>
+        </div>
+
+        <div class="pt-4 pb-2">
+          <button id="res-action-btn" onclick="nextScreenAction()" class="w-full bg-[#007aff] hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-1.5 text-sm shadow-md transition">
+            <span id="res-action-text">Siguiente caso</span>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- VISTA 3: Análisis del mensaje con Pines -->
+      <div id="view-analysis" class="hidden flex flex-col flex-1 justify-between pt-1">
+        <div class="flex flex-col items-center">
+          <div class="relative">
+            <div class="w-12 h-12 rounded-full bg-[#dbe0e6] flex items-center justify-center text-slate-500">
+              <i data-lucide="user" class="w-7 h-7 fill-slate-400 stroke-none"></i>
+            </div>
+          </div>
+          <span id="an-sender" class="font-semibold text-[13px] text-neutral-900 mt-1">Remitente</span>
+          <span class="text-[10px] text-neutral-400 font-semibold">SMS</span>
+          
+          <div class="w-full mt-2">
+            <div class="bg-[#ebebed] text-neutral-900 rounded-2xl px-4 py-3 text-[13px] leading-relaxed shadow-sm">
+              <p id="an-sms-annotated"></p>
+            </div>
+          </div>
+
+          <div class="w-full mt-3 text-left">
+            <h4 class="text-[12px] font-bold text-neutral-800 mb-2">Puntos de alerta</h4>
+            <div id="an-items-container" class="space-y-2"></div>
+            <div id="an-tip-box" class="mt-3 p-2.5 bg-[#eff6ff] rounded-xl border border-blue-100 flex items-start gap-2 text-left">
+              <div class="w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                <i data-lucide="info" class="w-3 h-3"></i>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold text-blue-900 block leading-tight">Consejo</span>
+                <span id="an-tip-text" class="text-[10.5px] text-blue-800 leading-tight block mt-0.5">Tip.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 pb-2">
+          <button onclick="finishAnalysis()" class="w-full bg-[#007aff] hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-1.5 text-sm shadow-md transition">
+            <span>Continuar</span>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- VISTA 4: Selección de QR (NUEVO RETO LADO A LADO) -->
+      <div id="view-qr-selection" class="hidden flex flex-col flex-1 pt-2 pb-2">
+        <div class="text-center mb-5">
+          <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
+            <i data-lucide="scan-line" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-bold text-neutral-900 text-base leading-snug">Reto Final: Códigos QR</h3>
+          <p class="text-neutral-500 text-xs mt-1 px-2">Selecciona el código QR que consideres seguro escanear en la vida real.</p>
+        </div>
+
+        <!-- Grid de 2 columnas -->
+        <div class="grid grid-cols-2 gap-4 flex-1 content-start px-1">
+          
+          <!-- Opción Falsa -->
+          <div id="qr-fake" onclick="selectQR('fake')" class="qr-option bg-slate-100 rounded-2xl overflow-hidden flex flex-col cursor-pointer transition shadow-sm hover:shadow-md relative">
+            <div class="bg-white p-2.5 flex justify-center items-center">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://bit.ly/premio-gratis" alt="QR Falso" class="w-full h-auto aspect-square object-contain" />
+            </div>
+            <div class="p-3 flex flex-col flex-1">
+              <p class="text-[12px] font-bold text-neutral-900 leading-tight">Sticker calle</p>
+              <div class="mt-1.5 text-[10px] font-mono text-slate-500 break-all w-full">
+                URL <br>www.amaz0n-seguridad.com/login
+              </div>
+            </div>
+          </div>
+
+          <!-- Opción Segura -->
+          <div id="qr-safe" onclick="selectQR('safe')" class="qr-option bg-slate-100 rounded-2xl overflow-hidden flex flex-col cursor-pointer transition shadow-sm hover:shadow-md relative">
+            <div class="bg-white p-2.5 flex justify-center items-center">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://menurestaurante.com/carta" alt="QR Seguro" class="w-full h-auto aspect-square object-contain" />
+            </div>
+            <div class="p-3 flex flex-col flex-1">
+              <p class="text-[12px] font-bold text-neutral-900 leading-tight">Menú local</p>
+              <div class="mt-1.5 text-[10px] font-mono text-slate-500 break-all w-full">
+                URL <br>drive.google.com/file/menu
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="pt-4 mt-auto">
+          <button id="btn-finalizar" onclick="finishGame()" class="w-full bg-[#007aff] hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-1.5 text-sm shadow-md transition opacity-50 cursor-not-allowed" disabled>
+            <span>Finalizar</span>
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- VISTA 5: Felicidades (QR Seguro) -->
+      <div id="view-congrats" class="hidden flex flex-col flex-1 items-center justify-center text-center py-4">
+        <div class="w-24 h-24 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-inner mb-4">
+          <i data-lucide="shield-check" class="w-12 h-12"></i>
+        </div>
+        <h2 class="text-2xl font-extrabold text-neutral-900">¡Felicidades!</h2>
+        <p class="text-[13px] text-neutral-600 mt-2 max-w-[260px] leading-relaxed">
+          Has superado la prueba con éxito. Eres capaz de identificar trampas de ingeniería social y priorizas el contexto seguro al escanear códigos QR.
+        </p>
+        
+      </div>
+
+      <!-- VISTA 6: QR Hacked (Código 2 incrustado con correcciones visuales) -->
+      <div id="view-qr-hacked" class="hidden flex-col w-full pb-8">
+        
+        <!-- Barra roja ajustada -->
+        <div class="bg-brand-alertRed py-2 px-3 text-center text-[10px] font-semibold text-white tracking-wide shadow-sm flex items-center justify-center gap-1.5 -mx-5 mb-4">
+          <span class="inline-block w-2 h-2 rounded-full bg-white animate-pulse shrink-0"></span>
+          <span class="truncate">Demostración local. No se envían datos.</span>
+        </div>
+
+        <div class="text-center mb-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-brand-alertRed text-[9px] font-bold uppercase tracking-wider mb-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-alertRed"></span>
+            Sin pedirte permisos
+          </div>
+          <h1 class="text-[20px] font-extrabold text-brand-navy tracking-tight leading-tight px-2">
+            Solo por escanear el QR falso compartiste...
+          </h1>
+        </div>
+
+        <!-- Ficha con shrink-0 para evitar corte inferior -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-4 clean-shadow w-full shrink-0 mb-2">
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-brand-alertRed animate-ping"></span>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Datos expuestos</span>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-brand-alertRed">En vivo</span>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-2xl mb-2">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-semibold text-slate-500">📍 Ubicación aproximada</span>
+            </div>
+            <p id="geoCity" class="text-[11px] font-bold text-brand-navy leading-snug">Consultando zona...</p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-2xl mb-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-semibold text-slate-500">🌐 Proveedor de Red</span>
+              <span id="netSpeedRelatable" class="text-[10px] font-bold text-brand-blue">Midiendo...</span>
+            </div>
+            <p id="geoISP" class="text-[11px] font-bold text-brand-darkBlue truncate">Detectando compañía...</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <div class="bg-slate-50 border border-slate-200/80 p-2.5 rounded-2xl flex flex-col justify-between overflow-hidden">
+              <span class="text-[10px] font-medium text-slate-400">📱 Tu equipo</span>
+              <p id="deviceGuess" class="text-[11px] font-bold text-brand-navy truncate my-1">Detectando...</p>
+              <span id="browserHabit" class="text-[9px] text-brand-blue font-semibold truncate">Navegador...</span>
+            </div>
+            <div class="bg-slate-50 border border-slate-200/80 p-2.5 rounded-2xl flex flex-col justify-between overflow-hidden">
+              <span class="text-[10px] font-medium text-slate-400">🔋 Batería</span>
+              <p id="batteryStatus" class="text-[11px] font-bold text-slate-800 my-1">Checando...</p>
+              <span id="darkModeHabit" class="text-[9px] text-slate-500 font-medium truncate">Tema pantalla</span>
+            </div>
+            <div class="bg-slate-50 border border-slate-200/80 p-2.5 rounded-2xl flex flex-col justify-between overflow-hidden">
+              <span class="text-[10px] font-medium text-slate-400">🎙️ Hardware</span>
+              <p id="mediaPeripherals" class="text-[11px] font-bold text-brand-navy my-1">Consultando...</p>
+              <span id="screenTouch" class="text-[9px] text-slate-500 font-medium truncate">Touch</span>
+            </div>
+            <div class="bg-slate-50 border border-slate-200/80 p-2.5 rounded-2xl flex flex-col justify-between overflow-hidden">
+              <span class="text-[10px] font-medium text-slate-400">🏷️ IP Pública</span>
+              <p id="geoIpPublic" class="text-[11px] font-mono font-bold text-brand-alertRed truncate my-1">Obteniendo...</p>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-100 pt-3 space-y-2">
+            <div class="bg-red-50/70 border border-red-200/80 rounded-xl p-2.5">
+              <p class="text-[11px] font-extrabold text-brand-alertRed flex items-center gap-1.5 mb-1">
+                <span>⚠️</span> El peligro:
+              </p>
+              <p class="text-[10px] text-slate-700 leading-relaxed">
+                El atacante ahora sabe qué dispositivo usas para enviarte virus a medida y conoce tu zona para futuras estafas dirigidas.
+              </p>
+            </div>
+          </div>
+
+          <button onclick="openModal('howToProtectModal')" class="mt-4 w-full py-2.5 px-4 rounded-xl bg-brand-navy hover:bg-slate-800 text-white font-bold text-[11px] transition shadow-sm flex items-center justify-center gap-1.5">
+            <span>🛡️</span> ¿Cómo me protejo?
+          </button>
+          
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Barra Inferior iOS Home Indicator -->
+    <div class="h-5 bg-white flex justify-center items-center shrink-0 pb-1 z-30">
+      <div class="w-32 h-1 bg-black/30 rounded-full"></div>
+    </div>
+
+    <!-- Modal de Protección (Dentro del iPhone) -->
+    <div id="howToProtectModal" class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 modal-backdrop hidden opacity-0 transition-opacity duration-200">
+      <div class="bg-white rounded-3xl w-full p-5 text-slate-700 shadow-2xl relative max-h-[85vh] overflow-y-auto custom-scroll">
+        <button onclick="closeModal('howToProtectModal')" class="absolute top-3 right-3 text-slate-400 hover:text-slate-800 p-1.5 rounded-full bg-slate-100 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+
+        <h3 class="text-lg font-extrabold text-brand-navy mb-1 mt-1">Protégete</h3>
+        <p class="text-[11px] text-slate-500 mb-4">Prácticas clave al escanear QRs:</p>
+
+        <div class="space-y-2.5 text-[11px] text-slate-700">
+          <div class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+            <span class="text-base mt-0.5">🔎</span>
+            <div>
+              <strong class="text-brand-navy block mb-0.5">Verifica el contexto</strong>
+              Jamás escanees QRs pegados en postes, stickers sobrepuestos o sin origen verificable.
+            </div>
+          </div>
+          <div class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+            <span class="text-base mt-0.5">👁️</span>
+            <div>
+              <strong class="text-brand-navy block mb-0.5">Previsualiza la URL</strong>
+              Tu cámara muestra a dónde te llevará el QR antes de abrirlo. Si usa acortadores (bit.ly) o nombres raros, ignóralo.
+            </div>
+          </div>
+          <div class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+            <span class="text-base mt-0.5">🦊</span>
+            <div>
+              <strong class="text-brand-navy block mb-0.5">Navegador seguro</strong>
+              Usa navegadores como Brave o Firefox en tu celular que bloquean scripts de rastreo automáticamente.
+            </div>
+          </div>
+        </div>
+
+        <button onclick="closeModal('howToProtectModal')" class="mt-4 w-full py-2.5 rounded-xl bg-brand-blue text-white font-bold text-[11px] transition">
+          ¡Entendido!
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Pool de Smishing
+    const SCENARIOS = [
+      {
+        id: 1, sender: "+52 55 4102 9981", verified: false, isSmishing: true,
+        text: "Amazon Recruiting: Se solicitan colaboradores remotos de medio tiempo. Gane entre $800 y $3,500 diarios realizando tareas sencillas. Info WhatsApp: https://bit.ly/amazon-recluta-mx",
+        annotatedHtml: `Amazon Recruiting: Se solicitan colaboradores remotos de medio tiempo. <span class="bg-red-100 text-red-900 px-1 py-0.5 rounded border border-red-200">Gane entre $800 y $3,500 diarios realizando tareas sencillas.</span><span class="inline-flex items-center justify-center w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full ml-1">1</span> Info WhatsApp: <span class="text-blue-600 underline">https://bit.ly/amazon-recluta-mx</span><span class="inline-flex items-center justify-center w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full ml-1">2</span>`,
+        alerts: [
+          { icon: "link", title: "Acortador de URL", desc: "Oculta el destino real del enlace." },
+          { icon: "layers", title: "Oferta poco realista", desc: "Sueldos muy altos por tareas sencillas." }
+        ],
+        tip: "Desconfía de ofertas de trabajo que prometen grandes ganancias y piden contactar por WhatsApp."
+      },
+      {
+        id: 2, sender: "BBVA México", verified: true, isSmishing: false,
+        text: "BBVA: Retiro sin tarjeta efectuado por $1,200.00 en Cajero Reforma. Si no reconoce esta operacion, llame a Línea BBVA al reverso de su tarjeta.",
+        annotatedHtml: `BBVA: Retiro sin tarjeta efectuado por $1,200.00 en Cajero Reforma. Si no reconoce esta operacion, llame a Línea BBVA al reverso de su tarjeta.`,
+        alerts: [
+          { icon: "check-circle", title: "Alerta transaccional segura", desc: "Informa una acción sin pedir interacción." },
+          { icon: "check-circle", title: "Canal de contacto físico", desc: "Indica verificar el número al reverso de tu tarjeta." }
+        ],
+        tip: "Los bancos reales no te envían enlaces para cancelar operaciones."
+      },
+      {
+        id: 3, sender: "CFE Alerta", verified: false, isSmishing: true,
+        text: "CFE AVISO: Su medidor presenta corte para manana por adeudo vencido de $1,420 MXN. Pague ahora en linea: https://cfe-pagos-enlinea.net",
+        annotatedHtml: `CFE AVISO: <span class="bg-red-100 text-red-900 px-1 py-0.5 rounded border border-red-200">Su medidor presenta corte para manana</span><span class="inline-flex items-center justify-center w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full ml-1">1</span>. Pague ahora en: <span class="text-blue-600 underline">https://cfe-pagos-enlinea.net</span><span class="inline-flex items-center justify-center w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full ml-1">2</span>`,
+        alerts: [
+          { icon: "link", title: "Dominio .net impostor", desc: "CFE oficial opera únicamente en 'cfe.mx'." },
+          { icon: "layers", title: "Urgencia extrema de corte", desc: "Buscan que pagues con tarjeta sin pensarlo." }
+        ],
+        tip: "Paga siempre tus servicios directamente en la app oficial de la paraestatal."
+      },
+      {
+        id: 4, sender: "Uber", verified: true, isSmishing: false,
+        text: "Tu codigo de seguridad de Uber es 591042. Nunca compartas este codigo con nadie. Nuestro equipo nunca te lo pedira.",
+        annotatedHtml: `Tu codigo de seguridad de Uber es 591042. Nunca compartas este codigo con nadie. Nuestro equipo nunca te lo pedira.`,
+        alerts: [
+          { icon: "check-circle", title: "Código de autenticación 2FA", desc: "Mensaje de uso único transaccional." },
+          { icon: "check-circle", title: "Sin enlaces externos", desc: "No te redirige a ninguna página web." }
+        ],
+        tip: "Los códigos de verificación auténticos nunca llevan enlaces para ingresar la clave."
+      }
+    ];
+
+    // =========================================================
+    // VARIABLES DEL SISTEMA Y CONEXIÓN A GOOGLE SHEETS
+    // =========================================================
+    
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjcUjvcqzbtWpNGd-c5jbN909oF_55WqX-UchJRgWosEhO1z2MkXsihMN05lpYxB15BA/exec"; 
+    
+    // Tracker para registrar los aciertos del usuario
+    let tracker = { smishing1: false, smishing2: false, qr: false };
+
+    let currentCases = [];
+    let currentIndex = 0;
+    let selectedQRType = null;
+    let lastAnswerWasCorrect = false;
+
+    // INICIALIZACIÓN
+    function initGame() {
+      // Reiniciar tracker por si el usuario vuelve a jugar
+      tracker = { smishing1: false, smishing2: false, qr: false };
+
+      const shuffled = [...SCENARIOS].sort(() => 0.5 - Math.random());
+      currentCases = shuffled.slice(0, 2); // SOLO 2 CASOS DE SMISHING
+      currentIndex = 0;
+      selectedQRType = null;
+      
+      document.getElementById('top-nav').style.display = "flex";
+      showQuestionView();
+      
+      // Pre-cargar datos del hackeo QR en background
+      detectLocationAndNetwork();
+      detectDeviceAndHardware();
+      detectHabits();
+      detectPeripherals();
+    }
+
+    function hideAllViews() {
+      const views = ['view-question', 'view-result', 'view-analysis', 'view-qr-selection', 'view-congrats', 'view-qr-hacked'];
+      views.forEach(v => document.getElementById(v).classList.add('hidden'));
+    }
+
+    function updateProgressIndicators() {
+      if(currentIndex < 2) {
+        document.getElementById('screen-header-title').textContent = `Caso ${currentIndex + 1} de 3`;
+      } else {
+        document.getElementById('screen-header-title').textContent = `Reto Final (3 de 3)`;
+      }
+      
+      const bars = document.getElementById('progress-bars-container').children;
+      for (let i = 0; i < 3; i++) {
+        bars[i].className = i <= currentIndex ? "h-1 rounded-full bg-blue-500 transition-all duration-300" : "h-1 rounded-full bg-slate-200 transition-all duration-300";
+      }
+    }
+
+    // --- LÓGICA SMISHING ---
+    function showQuestionView() {
+      hideAllViews();
+      updateProgressIndicators();
+      document.getElementById('view-question').classList.remove('hidden');
+
+      const data = currentCases[currentIndex];
+      document.getElementById('q-sender-name').textContent = data.sender;
+      
+      const vBadge = document.getElementById('q-verified-badge');
+      const vCheck = document.getElementById('q-verified-check');
+      if (data.verified) {
+        vBadge.classList.remove('hidden');
+        vCheck.classList.remove('hidden');
+      } else {
+        vBadge.classList.add('hidden');
+        vCheck.classList.add('hidden');
+      }
+
+      let formatted = data.text.replace(/(https?:\/\/[^\s]+)/g, `<span class="text-blue-600 underline break-all">$1</span>`);
+      document.getElementById('q-sms-body').innerHTML = formatted;
+      lucide.createIcons();
+    }
+
+    function submitAnswer(userMarkedReal) {
+      const data = currentCases[currentIndex];
+      const isActuallyReal = !data.isSmishing;
+      lastAnswerWasCorrect = (userMarkedReal === isActuallyReal);
+      
+      // GUARDAR EN TRACKER
+      if (currentIndex === 0) tracker.smishing1 = lastAnswerWasCorrect;
+      if (currentIndex === 1) tracker.smishing2 = lastAnswerWasCorrect;
+
+      showResultView(lastAnswerWasCorrect, isActuallyReal, data);
+    }
+
+    function showResultView(isCorrect, isReal, data) {
+      hideAllViews();
+      document.getElementById('view-result').classList.remove('hidden');
+
+      const circle = document.getElementById('res-circle');
+      const halo = document.getElementById('res-halo');
+      const icon = document.getElementById('res-icon');
+      const title = document.getElementById('res-title');
+      const subtitle = document.getElementById('res-subtitle');
+      const listTitle = document.getElementById('res-list-title');
+      const itemsContainer = document.getElementById('res-items-container');
+      const actionText = document.getElementById('res-action-text');
+
+      if (isCorrect) {
+        circle.className = "relative w-20 h-20 rounded-full bg-[#10b981] flex items-center justify-center text-white shadow-md";
+        halo.className = "absolute -inset-2 bg-emerald-100/70 rounded-full blur-sm";
+        icon.setAttribute('data-lucide', 'check');
+        title.className = "text-xl font-bold text-[#10b981] mt-2";
+        title.textContent = "¡Correcto!";
+        subtitle.textContent = isReal ? "Este mensaje es auténtico." : "Identificaste que este mensaje es smishing.";
+        listTitle.textContent = isReal ? "Señales de confianza:" : "Principales alertas detectadas:";
+      } else {
+        circle.className = "relative w-20 h-20 rounded-full bg-[#ef4444] flex items-center justify-center text-white shadow-md";
+        halo.className = "absolute -inset-2 bg-rose-100/70 rounded-full blur-sm";
+        icon.setAttribute('data-lucide', 'x');
+        title.className = "text-xl font-bold text-[#ef4444] mt-2";
+        title.textContent = "Incorrecto";
+        subtitle.textContent = isReal ? "Marcaste que era falso, pero es auténtico." : "Este mensaje es un caso de smishing.";
+        listTitle.textContent = "¿Por qué?";
+      }
+
+      itemsContainer.innerHTML = '';
+      data.alerts.forEach(item => {
+        const row = document.createElement('div');
+        row.className = "flex items-start gap-2.5";
+        let iconBg = isReal ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-500";
+        let iconName = isReal ? "check" : item.icon;
+
+        row.innerHTML = `
+          <div class="w-6 h-6 rounded-full ${iconBg} flex items-center justify-center shrink-0 mt-0.5">
+            <i data-lucide="${iconName}" class="w-3.5 h-3.5"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-neutral-800 block leading-tight">${item.title}</span>
+            <span class="text-[11px] text-neutral-500 block leading-tight mt-0.5">${item.desc}</span>
+          </div>
+        `;
+        itemsContainer.appendChild(row);
+      });
+
+      if (!isCorrect && data.isSmishing) {
+        actionText.textContent = "Continuar";
+      } else {
+        actionText.textContent = (currentIndex === 1) ? "Ir al Reto Final" : "Siguiente caso";
+      }
+      lucide.createIcons();
+    }
+
+    function nextScreenAction() {
+      const data = currentCases[currentIndex];
+      if (!lastAnswerWasCorrect && data.isSmishing) {
+        showAnalysisView(data);
+      } else {
+        advanceNextCase();
+      }
+    }
+
+    function showAnalysisView(data) {
+      hideAllViews();
+      document.getElementById('view-analysis').classList.remove('hidden');
+      document.getElementById('screen-header-title').textContent = "Análisis del mensaje";
+
+      document.getElementById('an-sender').textContent = data.sender;
+      document.getElementById('an-sms-annotated').innerHTML = data.annotatedHtml;
+      
+      const itemsContainer = document.getElementById('an-items-container');
+      itemsContainer.innerHTML = '';
+
+      data.alerts.forEach((alert, idx) => {
+        const item = document.createElement('div');
+        item.className = "flex items-start gap-2";
+        item.innerHTML = `
+          <div class="w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</div>
+          <div>
+            <span class="text-xs font-bold text-red-600 block leading-tight">${alert.title}</span>
+            <span class="text-[10.5px] text-neutral-600 block leading-tight">${alert.desc}</span>
+          </div>
+        `;
+        itemsContainer.appendChild(item);
+      });
+
+      document.getElementById('an-tip-text').textContent = data.tip;
+      lucide.createIcons();
+    }
+
+    function finishAnalysis() { advanceNextCase(); }
+
+    function advanceNextCase() {
+      if (currentIndex < 1) { // 2 casos (índice 0 y 1)
+        currentIndex++;
+        showQuestionView();
+      } else {
+        currentIndex++; // Para que la barra se pinte al 100%
+        showQRSelectionView();
+      }
+    }
+
+    // --- LÓGICA RETO QR ---
+    function showQRSelectionView() {
+      hideAllViews();
+      updateProgressIndicators();
+      document.getElementById('view-qr-selection').classList.remove('hidden');
+      document.getElementById('btn-finalizar').disabled = true;
+      document.getElementById('btn-finalizar').classList.add('opacity-50', 'cursor-not-allowed');
+      
+      // Reset estilos
+      document.getElementById('qr-fake').classList.remove('selected');
+      document.getElementById('qr-safe').classList.remove('selected');
+      lucide.createIcons();
+    }
+
+    function selectQR(type) {
+      selectedQRType = type;
+      
+      document.getElementById('qr-fake').classList.remove('selected');
+      document.getElementById('qr-safe').classList.remove('selected');
+      
+      document.getElementById(`qr-${type}`).classList.add('selected');
+      
+      const btn = document.getElementById('btn-finalizar');
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // FINALIZAR JUEGO Y ENVIAR AL EXCEL
+    function finishGame() {
+      hideAllViews();
+      document.getElementById('top-nav').style.display = "none"; 
+
+      // Evaluar el QR
+      tracker.qr = (selectedQRType === 'safe');
+      
+      // Calcular puntaje
+      let puntajeFinal = 0;
+      if (tracker.smishing1) puntajeFinal++;
+      if (tracker.smishing2) puntajeFinal++;
+      if (tracker.qr) puntajeFinal++;
+
+      // Enviar datos en segundo plano a Google Sheets
+      if(GOOGLE_SCRIPT_URL !== "PEGA_AQUÍ_TU_URL_DE_APPS_SCRIPT") {
+        fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            smishing1: tracker.smishing1,
+            smishing2: tracker.smishing2,
+            qr: tracker.qr,
+            puntaje: puntajeFinal
+          })
+        }).then(() => console.log("Resultados guardados en Excel"))
+          .catch(err => console.error("Error al guardar", err));
+      }
+
+      // Mostrar pantalla final
+      if(selectedQRType === 'safe') {
+        document.getElementById('view-congrats').classList.remove('hidden');
+        document.getElementById('view-congrats').classList.add('flex');
+      } else {
+        document.getElementById('view-qr-hacked').classList.remove('hidden');
+        document.getElementById('view-qr-hacked').classList.add('flex');
+      }
+      lucide.createIcons();
+    }
+
+    function handleBackAction() {
+      if (!document.getElementById('view-analysis').classList.contains('hidden')) {
+        hideAllViews();
+        document.getElementById('view-result').classList.remove('hidden');
+      } else if (!document.getElementById('view-result').classList.contains('hidden')) {
+        hideAllViews();
+        document.getElementById('view-question').classList.remove('hidden');
+      } else if (!document.getElementById('view-qr-selection').classList.contains('hidden')) {
+        currentIndex--;
+        hideAllViews();
+        document.getElementById('view-result').classList.remove('hidden');
+        updateProgressIndicators();
+      }
+    }
+
+    function restartApp() { initGame(); }
+
+    // --- LÓGICA EXTRACCIÓN DATOS QR ---
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    async function detectLocationAndNetwork() {
+      const speedElem = document.getElementById('netSpeedRelatable');
+      try {
+        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (conn) {
+          if (conn.type === 'wifi') speedElem.textContent = "Wi-Fi";
+          else if (conn.type === 'cellular') speedElem.textContent = `Datos ${conn.effectiveType ? conn.effectiveType.toUpperCase() : 'Móviles'}`;
+          else speedElem.textContent = conn.effectiveType ? `Red ${conn.effectiveType.toUpperCase()}` : "Conectado";
+        } else { speedElem.textContent = "Wi-Fi / Red"; }
+      } catch (e) { speedElem.textContent = "En línea"; }
+
+      function renderGeoData(ip, city, region, postal, country, ispOrg) {
+        const parts = [];
+        if (city) parts.push(city);
+        if (region && region !== city) parts.push(region);
+        if (country) parts.push(country);
+        document.getElementById('geoCity').textContent = parts.length > 0 ? parts.join(', ') : "Ciudad de México, México";
+        const cleanIsp = (ispOrg || "Proveedor no identificado").replace(/^AS\d+\s+/, '');
+        document.getElementById('geoISP').textContent = cleanIsp;
+        document.getElementById('geoIpPublic').textContent = ip || "No disponible";
+      }
+
+      try {
+        const res = await fetch('https://ipwho.is/');
+        const data = await res.json();
+        if (data && data.success) {
+          const isp = data.connection?.isp || data.connection?.org || data.isp;
+          renderGeoData(data.ip, data.city, data.region, data.postal, data.country, isp);
+          return;
+        }
+      } catch (e) {}
+
+      try {
+        const res = await fetch('https://freeipapi.com/api/json');
+        const data = await res.json();
+        if (data && data.ipAddress) {
+          renderGeoData(data.ipAddress, data.cityName, data.regionName, data.zipCode, data.countryName, "Red comercial detectada");
+          return;
+        }
+      } catch (e) {}
+
+      document.getElementById('geoCity').textContent = "Consulta bloqueada por adblocker";
+      document.getElementById('geoISP').textContent = "Red protegida localmente";
+      document.getElementById('geoIpPublic').textContent = "Protegida";
+    }
+
+    function detectDeviceAndHardware() {
+      const ua = navigator.userAgent;
+      const deviceElem = document.getElementById('deviceGuess');
+      let type = "Computadora";
+
+      if (/iPhone/i.test(ua)) type = "Apple iPhone";
+      else if (/iPad/i.test(ua)) type = "iPad";
+      else if (/Android/i.test(ua)) type = "Android";
+      else if (/Macintosh|Mac OS X/i.test(ua)) type = "Mac / MacBook";
+      else if (/Windows NT/i.test(ua)) type = "PC Windows";
+      
+      if (deviceElem) deviceElem.textContent = type;
+
+      const touchElem = document.getElementById('screenTouch');
+      const touchPoints = navigator.maxTouchPoints || 0;
+      if (touchElem) touchElem.textContent = touchPoints > 0 ? `Táctil (${touchPoints} pts)` : "Mouse estándar";
+
+      const batElem = document.getElementById('batteryStatus');
+      if (batElem && 'getBattery' in navigator) {
+        navigator.getBattery().then(bat => {
+          const update = () => {
+            const level = Math.round(bat.level * 100);
+            const state = bat.charging ? "⚡" : "🔋";
+            batElem.textContent = `${level}% ${state}`;
+          };
+          update();
+          bat.onlevelchange = update;
+          bat.onchargingchange = update;
+        }).catch(() => { batElem.textContent = "Oculta"; });
+      } else {
+        if(batElem) batElem.textContent = "No expuesta";
+      }
+    }
+
+    function detectHabits() {
+      const darkModeElem = document.getElementById('darkModeHabit');
+      if (darkModeElem) {
+        const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        darkModeElem.textContent = isDark ? "Oscuro 🌙" : "Claro ☀️";
+      }
+      const browserElem = document.getElementById('browserHabit');
+      if (browserElem) {
+        const ua = navigator.userAgent;
+        let browserName = "Navegador Web";
+        if (/Edg\//i.test(ua)) browserName = "Edge";
+        else if (/Chrome\//i.test(ua)) browserName = "Chrome";
+        else if (/Firefox\//i.test(ua)) browserName = "Firefox";
+        else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browserName = "Safari";
+        browserElem.textContent = `${browserName}`;
+      }
+    }
+
+    function detectPeripherals() {
+      const periphElem = document.getElementById('mediaPeripherals');
+      if (periphElem && navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices().then(devices => {
+          const cams = devices.filter(d => d.kind === 'videoinput').length;
+          const mics = devices.filter(d => d.kind === 'audioinput').length;
+          periphElem.textContent = `${cams} Cam / ${mics} Mic`;
+        }).catch(() => { periphElem.textContent = "Sin acceso"; });
+      } else {
+        if(periphElem) periphElem.textContent = "No disponible";
+      }
+    }
+
+    window.onload = () => { initGame(); };
+  </script>
+</body>
+</html>
