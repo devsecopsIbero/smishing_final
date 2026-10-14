@@ -185,54 +185,15 @@
         </div>
 
         <div class="pt-4 pb-2">
-          <button id="res-action-btn" onclick="nextScreenAction()" class="w-full bg-[#007aff] hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-1.5 text-sm shadow-md transition">
+          <!-- Modificado para ir directamente a advanceNextCase -->
+          <button id="res-action-btn" onclick="advanceNextCase()" class="w-full bg-[#007aff] hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-1.5 text-sm shadow-md transition">
             <span id="res-action-text">Siguiente caso</span>
             <i data-lucide="chevron-right" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
 
-      <!-- VISTA 3: Análisis del mensaje con Pines -->
-      <div id="view-analysis" class="hidden flex flex-col flex-1 justify-between pt-1">
-        <div class="flex flex-col items-center">
-          <div class="relative">
-            <div class="w-12 h-12 rounded-full bg-[#dbe0e6] flex items-center justify-center text-slate-500">
-              <i data-lucide="user" class="w-7 h-7 fill-slate-400 stroke-none"></i>
-            </div>
-          </div>
-          <span id="an-sender" class="font-semibold text-[13px] text-neutral-900 mt-1">Remitente</span>
-          <span class="text-[10px] text-neutral-400 font-semibold">SMS</span>
-          
-          <div class="w-full mt-2">
-            <div class="bg-[#ebebed] text-neutral-900 rounded-2xl px-4 py-3 text-[13px] leading-relaxed shadow-sm">
-              <p id="an-sms-annotated"></p>
-            </div>
-          </div>
-
-          <div class="w-full mt-3 text-left">
-            <h4 class="text-[12px] font-bold text-neutral-800 mb-2">Puntos de alerta</h4>
-            <div id="an-items-container" class="space-y-2"></div>
-            <div id="an-tip-box" class="mt-3 p-2.5 bg-[#eff6ff] rounded-xl border border-blue-100 flex items-start gap-2 text-left">
-              <div class="w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                <i data-lucide="info" class="w-3 h-3"></i>
-              </div>
-              <div>
-                <span class="text-[11px] font-bold text-blue-900 block leading-tight">Consejo</span>
-                <span id="an-tip-text" class="text-[10.5px] text-blue-800 leading-tight block mt-0.5">Tip.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="pt-3 pb-2">
-          <button onclick="finishAnalysis()" class="w-full bg-[#007aff] hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-1.5 text-sm shadow-md transition">
-            <span>Continuar</span>
-            <i data-lucide="chevron-right" class="w-4 h-4"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- VISTA 4: Selección de QR (NUEVO RETO LADO A LADO) -->
+      <!-- VISTA 3: Selección de QR (NUEVO RETO LADO A LADO) -->
       <div id="view-qr-selection" class="hidden flex flex-col flex-1 pt-2 pb-2">
         <div class="text-center mb-5">
           <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -242,35 +203,9 @@
           <p class="text-neutral-500 text-xs mt-1 px-2">Selecciona el código QR que consideres seguro escanear en la vida real.</p>
         </div>
 
-        <!-- Grid de 2 columnas -->
-        <div class="grid grid-cols-2 gap-4 flex-1 content-start px-1">
-          
-          <!-- Opción Falsa -->
-          <div id="qr-fake" onclick="selectQR('fake')" class="qr-option bg-slate-100 rounded-2xl overflow-hidden flex flex-col cursor-pointer transition shadow-sm hover:shadow-md relative">
-            <div class="bg-white p-2.5 flex justify-center items-center">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://bit.ly/premio-gratis" alt="QR Falso" class="w-full h-auto aspect-square object-contain" />
-            </div>
-            <div class="p-3 flex flex-col flex-1">
-              <p class="text-[12px] font-bold text-neutral-900 leading-tight">Sticker calle</p>
-              <div class="mt-1.5 text-[10px] font-mono text-slate-500 break-all w-full">
-                URL <br>www.amaz0n-seguridad.com/login
-              </div>
-            </div>
-          </div>
-
-          <!-- Opción Segura -->
-          <div id="qr-safe" onclick="selectQR('safe')" class="qr-option bg-slate-100 rounded-2xl overflow-hidden flex flex-col cursor-pointer transition shadow-sm hover:shadow-md relative">
-            <div class="bg-white p-2.5 flex justify-center items-center">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://menurestaurante.com/carta" alt="QR Seguro" class="w-full h-auto aspect-square object-contain" />
-            </div>
-            <div class="p-3 flex flex-col flex-1">
-              <p class="text-[12px] font-bold text-neutral-900 leading-tight">Menú local</p>
-              <div class="mt-1.5 text-[10px] font-mono text-slate-500 break-all w-full">
-                URL <br>drive.google.com/file/menu
-              </div>
-            </div>
-          </div>
-
+        <!-- Grid de 2 columnas donde se inyectarán las tarjetas -->
+        <div id="qr-cards-container" class="grid grid-cols-2 gap-4 flex-1 content-start px-1">
+          <!-- Las tarjetas QR se inyectarán aquí dinámicamente -->
         </div>
 
         <div class="pt-4 mt-auto">
@@ -281,19 +216,19 @@
         </div>
       </div>
 
-      <!-- VISTA 5: Felicidades (QR Seguro) -->
+      <!-- VISTA 4: Felicidades (QR Seguro) -->
       <div id="view-congrats" class="hidden flex flex-col flex-1 items-center justify-center text-center py-4">
         <div class="w-24 h-24 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-inner mb-4">
           <i data-lucide="shield-check" class="w-12 h-12"></i>
         </div>
         <h2 class="text-2xl font-extrabold text-neutral-900">¡Felicidades!</h2>
         <p class="text-[13px] text-neutral-600 mt-2 max-w-[260px] leading-relaxed">
-          Has superado la prueba con éxito. Eres capaz de identificar trampas de ingeniería social y priorizas el contexto seguro al escanear códigos QR.
+          Eres capaz de identificar trampas y priorizas el contexto al escanear códigos QR.
         </p>
         
       </div>
 
-      <!-- VISTA 6: QR Hacked (Código 2 incrustado con correcciones visuales) -->
+      <!-- VISTA 5: QR Hacked (Código 2 incrustado con correcciones visuales) -->
       <div id="view-qr-hacked" class="hidden flex-col w-full pb-8">
         
         <!-- Barra roja ajustada -->
@@ -430,45 +365,330 @@
   <script>
     // Pool de Smishing
     const SCENARIOS = [
+      // ==========================================
+      // CASOS LEGÍTIMOS (REALES)
+      // ==========================================
       {
-        id: 1, sender: "+52 55 4102 9981", verified: false, isSmishing: true,
-        text: "Amazon Recruiting: Se solicitan colaboradores remotos de medio tiempo. Gane entre $800 y $3,500 diarios realizando tareas sencillas. Info WhatsApp: https://bit.ly/amazon-recluta-mx",
-        annotatedHtml: `Amazon Recruiting: Se solicitan colaboradores remotos de medio tiempo. <span class="bg-red-100 text-red-900 px-1 py-0.5 rounded border border-red-200">Gane entre $800 y $3,500 diarios realizando tareas sencillas.</span><span class="inline-flex items-center justify-center w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full ml-1">1</span> Info WhatsApp: <span class="text-blue-600 underline">https://bit.ly/amazon-recluta-mx</span><span class="inline-flex items-center justify-center w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full ml-1">2</span>`,
+        id: 1, sender: "BBVA México", verified: true, isSmishing: false,
+        text: "BBVA: Retiro sin tarjeta efectuado por $1,200.00 en Cajero Reforma. Si no reconoce esta operacion, llame a Línea BBVA al reverso de su tarjeta.",
         alerts: [
-          { icon: "link", title: "Acortador de URL", desc: "Oculta el destino real del enlace." },
+          { icon: "check-circle", title: "Alerta transaccional", desc: "Informa una acción sin incluir enlaces externos." },
+          { icon: "check-circle", title: "Contacto físico", desc: "Indica llamar al número oficial al reverso del plástico." }
+        ],
+        tip: "Los bancos reales te piden usar los canales de la tarjeta, nunca un link por SMS."
+      },
+      {
+        id: 2, sender: "Uber", verified: true, isSmishing: false,
+        text: "Tu codigo de seguridad de Uber es 591042. Nunca compartas este codigo con nadie. Nuestro equipo nunca te lo pedira.",
+        alerts: [
+          { icon: "check-circle", title: "Código de un solo uso (2FA)", desc: "Se utiliza solo para el login en la app oficial." },
+          { icon: "check-circle", title: "Sin enlaces", desc: "No te redirige a ninguna página web." }
+        ],
+        tip: "Los códigos de verificación auténticos se ingresan directamente en la app que los solicitó."
+      },
+      {
+        id: 3, sender: "Telcel", verified: true, isSmishing: false,
+        text: "Tu Paquete Amigo Sin Limite 200 ha sido renovado con exito. Incluye llamadas/SMS sin limite y 3GB de navegacion.",
+        alerts: [
+          { icon: "check-circle", title: "Notificación de servicio", desc: "Aviso automático de tu operadora." },
+          { icon: "check-circle", title: "Cero fricción", desc: "No te pide confirmar datos ni ingresar a enlaces." }
+        ],
+        tip: "Las notificaciones legítimas de saldo son meramente informativas."
+      },
+      {
+        id: 4, sender: "Mercado Pago", verified: true, isSmishing: false,
+        text: "Mercado Pago: Transferencia enviada con exito por $450.00 a favor de Rodrigo S. Consulta tu saldo en la app.",
+        alerts: [
+          { icon: "check-circle", title: "Recibo digital", desc: "Operación clara sin solicitar clics." },
+          { icon: "check-circle", title: "Navegación protegida", desc: "Sugiere revisar dentro de la app oficial instalada." }
+        ],
+        tip: "El SMS bancario legítimo te invita a abrir tu aplicación, no un navegador web."
+      },
+      {
+        id: 5, sender: "Salud Digna", verified: true, isSmishing: false,
+        text: "Salud Digna: Su cita para ultrasonido es manana a las 08:30. Presentarse 15 min antes con comprobante impreso.",
+        alerts: [
+          { icon: "check-circle", title: "Recordatorio informativo", desc: "No pide datos ni dinero anticipado." },
+          { icon: "check-circle", title: "Canal verificado", desc: "Envío corporativo sin URLs sospechosas." }
+        ],
+        tip: "Las citas médicas legítimas te piden acudir al lugar físico, no pagar por enlaces."
+      },
+      {
+        id: 6, sender: "Amazon", verified: true, isSmishing: false,
+        text: "Tu pedido de Amazon con terminacion #7849 esta en camino y se entregara hoy antes de las 8 PM.",
+        alerts: [
+          { icon: "check-circle", title: "Estatus de compra", desc: "Información congruente con un pedido real." },
+          { icon: "check-circle", title: "Seguridad pasiva", desc: "No te alerta sobre problemas falsos para forzarte a actuar." }
+        ],
+        tip: "Si tienes dudas de tu entrega, abre directamente la app de Amazon."
+      },
+      {
+        id: 7, sender: "Banorte", verified: true, isSmishing: false,
+        text: "Banorte: Compra autorizada por $890.00 con tu tarjeta terminacion 1104 en Oxxo. Si no fuiste tu entra a Banorte Movil.",
+        alerts: [
+          { icon: "check-circle", title: "App oficial", desc: "Te dirige a usar la aplicación del banco." },
+          { icon: "check-circle", title: "Datos limitados", desc: "Solo expone los últimos cuatro dígitos de la tarjeta por seguridad." }
+        ],
+        tip: "Nunca canceles operaciones desde un link recibido por mensaje."
+      },
+      {
+        id: 8, sender: "Microsoft", verified: true, isSmishing: false,
+        text: "748291 es tu codigo de verificacion de la cuenta de Microsoft. Si no lo solicitaste, ignora este mensaje.",
+        alerts: [
+          { icon: "check-circle", title: "Código OTP", desc: "Clave temporal segura." },
+          { icon: "check-circle", title: "Advertencia clara", desc: "La empresa te instruye ignorarlo si no fuiste tú." }
+        ],
+        tip: "El aviso de ignorar el código es un buen indicador de que es un servicio real."
+      },
+      {
+        id: 9, sender: "Aeroméxico", verified: true, isSmishing: false,
+        text: "Aeromexico: Tu vuelo AM402 con destino a Monterrey esta a tiempo. Tu sala de abordar es la 74. ¡Buen viaje!",
+        alerts: [
+          { icon: "check-circle", title: "Datos precisos", desc: "Proporciona información real del aeropuerto." },
+          { icon: "check-circle", title: "Sin descarga", desc: "No te obliga a descargar pases de abordar desde links extraños." }
+        ],
+        tip: "La aerolínea te notifica cambios de sala, pero gestionas todo en su app."
+      },
+      {
+        id: 10, sender: "Cinépolis", verified: true, isSmishing: false,
+        text: "Cinepolis: Tu compra fue exitosa. Tu codigo de reserva para presentar en taquilla es WK89Q2.",
+        alerts: [
+          { icon: "check-circle", title: "Confirmación", desc: "Entrega el producto/código directamente." },
+          { icon: "check-circle", title: "Transaccional", desc: "Se envió segundos después de que hiciste la compra." }
+        ],
+        tip: "Códigos directos sin pedir inicio de sesión son la norma para boletos."
+      },
+      {
+        id: 11, sender: "Google", verified: true, isSmishing: false,
+        text: "Alerta de seguridad de Google: Se detecto un nuevo inicio de sesion en Windows. Revisa tu cuenta en myaccount.google.com",
+        alerts: [
+          { icon: "check-circle", title: "Dominio oficial", desc: "Usa el dominio legítimo google.com" },
+          { icon: "check-circle", title: "Acción manual", desc: "Es un texto plano, tú debes teclearlo en tu navegador." }
+        ],
+        tip: "Google prefiere enviarte notificaciones push a tu celular en lugar de links por SMS."
+      },
+      {
+        id: 12, sender: "CFE", verified: true, isSmishing: false,
+        text: "CFE Contigo: Tu recibo del periodo actual ya esta disponible en la aplicacion oficial. Evita recargos.",
+        alerts: [
+          { icon: "check-circle", title: "Promoción de App", desc: "Te invita a usar la vía oficial." },
+          { icon: "check-circle", title: "Sin enlaces de cobro", desc: "No pide dinero de forma inmediata." }
+        ],
+        tip: "La app 'CFE Contigo' es el canal oficial; no pagues en links de terceros."
+      },
+      {
+        id: 13, sender: "WhatsApp", verified: true, isSmishing: false,
+        text: "Tu codigo de WhatsApp es 123-456. Tambien puedes tocar este enlace para verificar: v.whatsapp.com/123456",
+        alerts: [
+          { icon: "check-circle", title: "Dominio raíz de WhatsApp", desc: "El enlace v.whatsapp.com es oficial." },
+          { icon: "check-circle", title: "Activación de equipo", desc: "Ocurre solo si acabas de instalar la app." }
+        ],
+        tip: "WhatsApp es de las pocas empresas que incluye links funcionales, pero solo para registro inicial."
+      },
+
+      // ==========================================
+      // CASOS FALSOS (SMISHING)
+      // ==========================================
+      {
+        id: 14, sender: "+52 55 4102 9981", verified: false, isSmishing: true,
+        text: "Amazon Recruiting: Se solicitan colaboradores remotos de medio tiempo. Gane entre $800 y $3,500 diarios. Info WhatsApp: https://bit.ly/amazon-mx",
+        alerts: [
+          { icon: "link", title: "Acortador de URL", desc: "Oculta el destino real." },
           { icon: "layers", title: "Oferta poco realista", desc: "Sueldos muy altos por tareas sencillas." }
         ],
-        tip: "Desconfía de ofertas de trabajo que prometen grandes ganancias y piden contactar por WhatsApp."
+        tip: "Desconfía de ofertas laborales recibidas por SMS que prometen dinero fácil y usan WhatsApp."
       },
       {
-        id: 2, sender: "BBVA México", verified: true, isSmishing: false,
-        text: "BBVA: Retiro sin tarjeta efectuado por $1,200.00 en Cajero Reforma. Si no reconoce esta operacion, llame a Línea BBVA al reverso de su tarjeta.",
-        annotatedHtml: `BBVA: Retiro sin tarjeta efectuado por $1,200.00 en Cajero Reforma. Si no reconoce esta operacion, llame a Línea BBVA al reverso de su tarjeta.`,
+        id: 15, sender: "CFE Alerta", verified: false, isSmishing: true,
+        text: "CFE AVISO: Su medidor presenta orden de corte para hoy por adeudo. Pague de inmediato en linea: https://cfe-pagos-enlinea.net",
         alerts: [
-          { icon: "check-circle", title: "Alerta transaccional segura", desc: "Informa una acción sin pedir interacción." },
-          { icon: "check-circle", title: "Canal de contacto físico", desc: "Indica verificar el número al reverso de tu tarjeta." }
+          { icon: "link", title: "Dominio .net impostor", desc: "CFE oficial opera en 'cfe.mx'." },
+          { icon: "layers", title: "Urgencia extrema", desc: "Buscan causarte pánico para que pagues." }
         ],
-        tip: "Los bancos reales no te envían enlaces para cancelar operaciones."
+        tip: "CFE nunca manda enlaces de pago bajo amenaza de corte inminente el mismo día."
       },
       {
-        id: 3, sender: "CFE Alerta", verified: false, isSmishing: true,
-        text: "CFE AVISO: Su medidor presenta corte para manana por adeudo vencido de $1,420 MXN. Pague ahora en linea: https://cfe-pagos-enlinea.net",
-        annotatedHtml: `CFE AVISO: <span class="bg-red-100 text-red-900 px-1 py-0.5 rounded border border-red-200">Su medidor presenta corte para manana</span><span class="inline-flex items-center justify-center w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full ml-1">1</span>. Pague ahora en: <span class="text-blue-600 underline">https://cfe-pagos-enlinea.net</span><span class="inline-flex items-center justify-center w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full ml-1">2</span>`,
+        id: 16, sender: "TRANSITO CDMX", verified: false, isSmishing: true,
+        text: "TRANSITO: Tiene una infraccion vencida ($1,850). Evite retiro de placas pagando con 50% de descuento en: https://gob-multas-cdmx.xyz",
         alerts: [
-          { icon: "link", title: "Dominio .net impostor", desc: "CFE oficial opera únicamente en 'cfe.mx'." },
-          { icon: "layers", title: "Urgencia extrema de corte", desc: "Buscan que pagues con tarjeta sin pensarlo." }
+          { icon: "link", title: "Dominio falso .xyz", desc: "Los portales de gobierno en México usan .gob.mx" },
+          { icon: "user-x", title: "Amenaza de retiro", desc: "Uso de coerción psicológica." }
         ],
-        tip: "Paga siempre tus servicios directamente en la app oficial de la paraestatal."
+        tip: "Consulta tus multas directo en 'estrados.cdmx.gob.mx'."
       },
       {
-        id: 4, sender: "Uber", verified: true, isSmishing: false,
-        text: "Tu codigo de seguridad de Uber es 591042. Nunca compartas este codigo con nadie. Nuestro equipo nunca te lo pedira.",
-        annotatedHtml: `Tu codigo de seguridad de Uber es 591042. Nunca compartas este codigo con nadie. Nuestro equipo nunca te lo pedira.`,
+        id: 17, sender: "SAT Notifica", verified: false, isSmishing: true,
+        text: "SAT: Saldo a favor por $7,410.00 MXN pendiente. Confirme su CLABE antes del viernes para recibirlo: https://sat-devolucion.org",
         alerts: [
-          { icon: "check-circle", title: "Código de autenticación 2FA", desc: "Mensaje de uso único transaccional." },
-          { icon: "check-circle", title: "Sin enlaces externos", desc: "No te redirige a ninguna página web." }
+          { icon: "link", title: "Dominio no gubernamental", desc: "El SAT no usa .org." },
+          { icon: "layers", title: "Anzuelo financiero", desc: "Te prometen dinero gratis a cambio de tus datos bancarios." }
         ],
-        tip: "Los códigos de verificación auténticos nunca llevan enlaces para ingresar la clave."
+        tip: "El SAT notifica oficialmente a través del Buzón Tributario, nunca te pide la CLABE por SMS."
+      },
+      {
+        id: 18, sender: "Netflix", verified: false, isSmishing: true,
+        text: "NETFLIX: Su suscripcion mensual ha sido suspendida. Actualice su metodo de pago hoy: https://netflix-micuenta-login.cc",
+        alerts: [
+          { icon: "link", title: "Dominio sospechoso .cc", desc: "Netflix solo gestiona pagos en netflix.com" },
+          { icon: "layers", title: "Suspensión de servicio", desc: "Táctica de urgencia para robar tu tarjeta." }
+        ],
+        tip: "Netflix avisa de problemas de pago en la pantalla de tu TV cuando intentas ver una serie."
+      },
+      {
+        id: 19, sender: "Santander", verified: false, isSmishing: true,
+        text: "SANTANDER: Alerta por intento de retiro no reconocido por $4,000. Ingrese para cancelar la operacion: https://santander-cancelaciones.com",
+        alerts: [
+          { icon: "link", title: "Página clonada", desc: "Es un link externo al banco diseñado para robar contraseñas." },
+          { icon: "layers", title: "Pánico financiero", desc: "Genera miedo por un cargo alto." }
+        ],
+        tip: "Llama de inmediato al teléfono que está atrás de tu tarjeta, nunca uses el link del SMS."
+      },
+      {
+        id: 20, sender: "Apple Support", verified: false, isSmishing: true,
+        text: "Apple iCloud: Su iPhone 13 perdido fue encendido hoy. Inicie sesion para ver la ubicacion: https://icloud-findmy-lost.com",
+        alerts: [
+          { icon: "link", title: "Dominio falso", desc: "Buscan tu Apple ID para poder formatear el teléfono que te robaron." },
+          { icon: "user-x", title: "Phishing dirigido", desc: "Saben que perdiste un equipo." }
+        ],
+        tip: "Entra a icloud.com/find desde tu computadora escribiéndolo tú mismo, no des clic."
+      },
+      {
+        id: 21, sender: "DHL Express", verified: false, isSmishing: true,
+        text: "DHL: Su paquete #MX-9210 esta retenido en aduanas. Pague los $45 MXN de impuestos para liberarlo: https://dhl-entrega-mx.top",
+        alerts: [
+          { icon: "layers", title: "Micro-cargo", desc: "Te piden muy poco dinero ($45) para que no sospeches y metas tu tarjeta." },
+          { icon: "link", title: "Extensión .top", desc: "Extensión de dominio de muy baja reputación." }
+        ],
+        tip: "Las paqueterías cobran aduanas en el momento de la entrega o desde su app oficial."
+      },
+      {
+        id: 22, sender: "+52 33 1948 2011", verified: false, isSmishing: true,
+        text: "Hola, se me rompio el celular y este es mi nuevo numero temporal, agregame a WhatsApp rapido porfa: https://wa.me/523319482011",
+        alerts: [
+          { icon: "user-x", title: "Familiar en apuros", desc: "Suplantación de identidad para pedirte dinero prestado." },
+          { icon: "link", title: "Redirección a chat", desc: "Lleva la estafa a WhatsApp para continuar el fraude." }
+        ],
+        tip: "Llama a tu familiar por teléfono (a su número de siempre) antes de contestar."
+      },
+      {
+        id: 23, sender: "Buro Credito", verified: false, isSmishing: true,
+        text: "BURO: Alguien solicito un prestamo a su nombre. Congele su estatus crediticio gratuitamente aqui: https://buro-proteccion.online",
+        alerts: [
+          { icon: "layers", title: "Robo de identidad", desc: "Fingen ayudarte a prevenir un fraude para cometerlo ellos." },
+          { icon: "link", title: "Dominio .online", desc: "Buró de Crédito usa burodecredito.com.mx." }
+        ],
+        tip: "El Buró de crédito oficial no manda SMS de emergencia gratuitos."
+      },
+      {
+        id: 24, sender: "Correos MX", verified: false, isSmishing: true,
+        text: "Correos de Mexico: Tu paquete no cupo en el buzon. Programe una nueva entrega pagando $15 MXN aqui: https://correos-mx-entregas.com",
+        alerts: [
+          { icon: "layers", title: "Trampa de entrega", desc: "Usan un monto bajo ($15) para robar los números de tu tarjeta." },
+          { icon: "user-x", title: "Suplantación", desc: "Correos de México no solicita pagos de reprogramación por SMS." }
+        ],
+        tip: "Acude a la oficina postal con tu número de guía si esperas un paquete."
+      },
+      {
+        id: 25, sender: "Infonavit", verified: false, isSmishing: true,
+        text: "Infonavit: Tienes un credito en efectivo preaprobado por $250,000 MXN. Inicia tu retiro hoy mismo: https://mi-credito-infonavit.xyz",
+        alerts: [
+          { icon: "layers", title: "Dinero fácil", desc: "Aprovechan la necesidad económica." },
+          { icon: "link", title: "Dominio .xyz", desc: "Instituciones mexicanas siempre usan .gob.mx o dominios verificados." }
+        ],
+        tip: "Los trámites de Infonavit son estrictamente a través de Mi Cuenta Infonavit."
+      },
+      {
+        id: 26, sender: "Puntos Telcel", verified: false, isSmishing: true,
+        text: "Telcel: Tienes 35,000 Puntos a punto de caducar hoy. Canjealos por un premio sorpresa pagando el envio: https://mitelcel-puntos.net",
+        alerts: [
+          { icon: "layers", title: "Premio condicionado", desc: "Te prometen algo gratis pero te cobran el envío (robo de tarjeta)." },
+          { icon: "link", title: "Sitio falso", desc: "No pertenece a la red de Círculo Azul Telcel." }
+        ],
+        tip: "Los puntos se canjean directamente en la plataforma o app oficial de tu operadora."
+      }
+    ];
+
+    // =========================================================
+    // BASE DE DATOS DE URLs QR
+    // =========================================================
+    const QR_CASES_SAFE = [
+      {
+        title: "Menú local",
+        url: "drive.google.com/file/menu-digital",
+        fullUrl: "https://drive.google.com/file/d/1XyZ/view"
+      },
+      {
+        title: "Página ",
+        url: "www.sat.gob.mx/consultas",
+        fullUrl: "https://www.sat.gob.mx/consultas"
+      },
+      {
+        title: "Sitio Universitario",
+        url: "ibero.mx/servicios",
+        fullUrl: "https://ibero.mx/servicios"
+      },
+      {
+        title: "Tienda ",
+        url: "www.amazon.com.mx",
+        fullUrl: "https://www.amazon.com.mx/"
+      },
+      {
+        title: "Cuenta Bancaria",
+        url: "www.banorte.com",
+        fullUrl: "https://www.banorte.com/"
+      },
+      {
+        title: "Servicios ",
+        url: "estrados.cdmx.gob.mx",
+        fullUrl: "https://estrados.cdmx.gob.mx/"
+      },
+      {
+        title: "Centro Ayuda",
+        url: "ayuda.uber.com",
+        fullUrl: "https://ayuda.uber.com/"
+      }
+    ];
+
+    const QR_CASES_FAKE = [
+      {
+        title: "Sticker",
+        url: "bit.ly/premio-gratis-hoy",
+        fullUrl: "https://bit.ly/premio-gratis-hoy"
+      },
+      {
+        title: "Cartel",
+        url: "www.amaz0n-seguridad.top",
+        fullUrl: "https://www.amaz0n-seguridad.top/login"
+      },
+      {
+        title: "Folleto buzón",
+        url: "bbva-cancelaciones.xyz",
+        fullUrl: "http://bbva-cancelaciones.xyz"
+      },
+      {
+        title: "Multa vehículo",
+        url: "gob-multas-cdmx.org",
+        fullUrl: "https://gob-multas-cdmx.org/pago"
+      },
+      {
+        title: "Paquete retenido",
+        url: "tinyurl.com/dhl-express-mx",
+        fullUrl: "https://tinyurl.com/dhl-express-mx"
+      },
+      {
+        title: "Alerta banco",
+        url: "santander.alerta-retiro.net",
+        fullUrl: "https://santander.alerta-retiro.net/"
+      },
+      {
+        title: "Sorteo",
+        url: "ow.ly/ganador-iphone",
+        fullUrl: "https://ow.ly/ganador-iphone"
+      },
+      {
+        title: "Actualizar datos",
+        url: "netflix-micuenta-login.cc",
+        fullUrl: "https://netflix-micuenta-login.cc"
       }
     ];
 
@@ -476,7 +696,7 @@
     // VARIABLES DEL SISTEMA Y CONEXIÓN A GOOGLE SHEETS
     // =========================================================
     
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjcUjvcqzbtWpNGd-c5jbN909oF_55WqX-UchJRgWosEhO1z2MkXsihMN05lpYxB15BA/exec"; 
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz23IH0a9iLdwOzL_Qf7BJl2yKr5zR4cwrkLrSDcloaZccVjasb0S66Ns8bmFXsvlzi4w/exec"; 
     
     // Tracker para registrar los aciertos del usuario
     let tracker = { smishing1: false, smishing2: false, qr: false };
@@ -507,7 +727,7 @@
     }
 
     function hideAllViews() {
-      const views = ['view-question', 'view-result', 'view-analysis', 'view-qr-selection', 'view-congrats', 'view-qr-hacked'];
+      const views = ['view-question', 'view-result', 'view-qr-selection', 'view-congrats', 'view-qr-hacked'];
       views.forEach(v => document.getElementById(v).classList.add('hidden'));
     }
 
@@ -610,52 +830,10 @@
         itemsContainer.appendChild(row);
       });
 
-      if (!isCorrect && data.isSmishing) {
-        actionText.textContent = "Continuar";
-      } else {
-        actionText.textContent = (currentIndex === 1) ? "Ir al Reto Final" : "Siguiente caso";
-      }
-      lucide.createIcons();
-    }
-
-    function nextScreenAction() {
-      const data = currentCases[currentIndex];
-      if (!lastAnswerWasCorrect && data.isSmishing) {
-        showAnalysisView(data);
-      } else {
-        advanceNextCase();
-      }
-    }
-
-    function showAnalysisView(data) {
-      hideAllViews();
-      document.getElementById('view-analysis').classList.remove('hidden');
-      document.getElementById('screen-header-title').textContent = "Análisis del mensaje";
-
-      document.getElementById('an-sender').textContent = data.sender;
-      document.getElementById('an-sms-annotated').innerHTML = data.annotatedHtml;
+      actionText.textContent = (currentIndex === 1) ? "Ir al Reto Final" : "Siguiente caso";
       
-      const itemsContainer = document.getElementById('an-items-container');
-      itemsContainer.innerHTML = '';
-
-      data.alerts.forEach((alert, idx) => {
-        const item = document.createElement('div');
-        item.className = "flex items-start gap-2";
-        item.innerHTML = `
-          <div class="w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</div>
-          <div>
-            <span class="text-xs font-bold text-red-600 block leading-tight">${alert.title}</span>
-            <span class="text-[10.5px] text-neutral-600 block leading-tight">${alert.desc}</span>
-          </div>
-        `;
-        itemsContainer.appendChild(item);
-      });
-
-      document.getElementById('an-tip-text').textContent = data.tip;
       lucide.createIcons();
     }
-
-    function finishAnalysis() { advanceNextCase(); }
 
     function advanceNextCase() {
       if (currentIndex < 1) { // 2 casos (índice 0 y 1)
@@ -663,29 +841,64 @@
         showQuestionView();
       } else {
         currentIndex++; // Para que la barra se pinte al 100%
-        showQRSelectionView();
+        generateQRChallenge();
       }
     }
 
-    // --- LÓGICA RETO QR ---
-    function showQRSelectionView() {
+    // --- LÓGICA RETO QR DINÁMICO ---
+    function generateQRChallenge() {
       hideAllViews();
       updateProgressIndicators();
       document.getElementById('view-qr-selection').classList.remove('hidden');
       document.getElementById('btn-finalizar').disabled = true;
       document.getElementById('btn-finalizar').classList.add('opacity-50', 'cursor-not-allowed');
-      
-      // Reset estilos
-      document.getElementById('qr-fake').classList.remove('selected');
-      document.getElementById('qr-safe').classList.remove('selected');
+
+      const container = document.getElementById('qr-cards-container');
+      container.innerHTML = ''; // Limpiar opciones anteriores
+
+      // Seleccionar un caso seguro y uno malicioso al azar
+      const safeCase = QR_CASES_SAFE[Math.floor(Math.random() * QR_CASES_SAFE.length)];
+      const fakeCase = QR_CASES_FAKE[Math.floor(Math.random() * QR_CASES_FAKE.length)];
+
+      // Preparar el HTML de las tarjetas
+      const safeCardHTML = createQRCardHTML('safe', safeCase);
+      const fakeCardHTML = createQRCardHTML('fake', fakeCase);
+
+      // Decidir aleatoriamente qué tarjeta va primero (izquierda)
+      if (Math.random() > 0.5) {
+        container.innerHTML = safeCardHTML + fakeCardHTML;
+      } else {
+        container.innerHTML = fakeCardHTML + safeCardHTML;
+      }
+
       lucide.createIcons();
+    }
+
+    function createQRCardHTML(type, data) {
+      return `
+        <div id="qr-${type}" onclick="selectQR('${type}')" class="qr-option bg-slate-100 rounded-2xl overflow-hidden flex flex-col cursor-pointer transition shadow-sm hover:shadow-md relative">
+          <div class="bg-white p-2.5 flex justify-center items-center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(data.fullUrl)}" alt="QR Code" class="w-full h-auto aspect-square object-contain" />
+          </div>
+          <div class="p-3 flex flex-col flex-1">
+            <p class="text-[12px] font-bold text-neutral-900 leading-tight">${data.title}</p>
+            <div class="mt-1.5 w-full">
+              <span class="text-[10px] font-bold text-slate-400">URL</span><br>
+              <span class="text-[10px] font-mono text-slate-500 break-all leading-tight">${data.url}</span>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function selectQR(type) {
       selectedQRType = type;
       
-      document.getElementById('qr-fake').classList.remove('selected');
-      document.getElementById('qr-safe').classList.remove('selected');
+      // Reset estilos
+      const fakeElem = document.getElementById('qr-fake');
+      const safeElem = document.getElementById('qr-safe');
+      if(fakeElem) fakeElem.classList.remove('selected');
+      if(safeElem) safeElem.classList.remove('selected');
       
       document.getElementById(`qr-${type}`).classList.add('selected');
       
@@ -738,10 +951,7 @@
     }
 
     function handleBackAction() {
-      if (!document.getElementById('view-analysis').classList.contains('hidden')) {
-        hideAllViews();
-        document.getElementById('view-result').classList.remove('hidden');
-      } else if (!document.getElementById('view-result').classList.contains('hidden')) {
+      if (!document.getElementById('view-result').classList.contains('hidden')) {
         hideAllViews();
         document.getElementById('view-question').classList.remove('hidden');
       } else if (!document.getElementById('view-qr-selection').classList.contains('hidden')) {
